@@ -56,7 +56,6 @@ const ProjectsProvider = ({ children }) => {
 
             const { data } = await axiosClient('/projects', config);
             setProjects(data);
-            console.log('data', data);
 
         } catch (error) {
             toast.error(error.response.data.msg);
@@ -116,8 +115,6 @@ const ProjectsProvider = ({ children }) => {
                     Authorization: `Bearer ${token}`
                 }
             }
-
-            console.log(project);
 
             const { data } = await axiosClient.post('/projects', project, config);
 
@@ -261,8 +258,7 @@ const ProjectsProvider = ({ children }) => {
     }
 
     const submitTask = async (task) => {
-
-        if (task?.project)
+        if (task?.id)
             await updateTask(task);
         else
             await createTask(task);
@@ -307,8 +303,6 @@ const ProjectsProvider = ({ children }) => {
                 }
             }
 
-            console.log(task);
-
             const { data } = await axiosClient.post('/tasks', task, config);
 
             setModalTask(false);
@@ -331,11 +325,10 @@ const ProjectsProvider = ({ children }) => {
         setTask(task);
         setModalDel(!modalDel);
     }
+
     const handleModalComment = task => {
-        console.log('taski', task);
         setTask(task)
         setModalComments(!modalComments);
-
     }
 
     const deleteTask = async () => {
@@ -649,8 +642,8 @@ const ProjectsProvider = ({ children }) => {
                 handleProjectImport,
                 importProject,
                 projectImport,
-                completeProject
-
+                completeProject,
+                updateTask
             }}
         >
             {children}

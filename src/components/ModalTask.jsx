@@ -27,7 +27,7 @@ const ModalTask = () => {
             setPriority(task.priority);
             return;
         }
-        else if(task){
+        else if (task) {
             setName(task.name);
             setDescription(task.description);
             setDeadline(task.deadline?.split("T")[0]);
@@ -51,7 +51,7 @@ const ModalTask = () => {
             return;
         }
 
-        submitTask({ id, name, description, deadline, priority, project: params.id, tag });
+        submitTask({ id, name, description, deadline, priority, project: params.id, tag, comments: [] });
 
         setName("");
         setDescription("");

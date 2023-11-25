@@ -9,7 +9,7 @@ import useAuth from "../hooks/useAuth"
 
 const ModalComments = () => {
     const { auth } = useAuth();
-    const { modalComments, handleModalComment, task, submitTask } = useProject();
+    const { modalComments, handleModalComment, task, updateTask } = useProject();
     const [commentText, setCommentText] = useState('');
     const [comments, setComments] = useState([])
 
@@ -24,7 +24,7 @@ const ModalComments = () => {
         const commentList = ([...task.comments, { 'user': auth.name, 'comment': commentText }])
 
         task.comments = commentList
-        submitTask(task)
+        updateTask(task)
         setCommentText('')
     };
 
@@ -96,9 +96,6 @@ const ModalComments = () => {
                                     <div className="mt-5 sm:mt-4 sm:flex flex-col" >
                                         <div className='h-[20rem] flex flex-col gap-2 overflow-auto p-5'>
                                             {
-
-
-
                                                 task.comments?.map((comment, index) => (
 
                                                     <div key={index} className='p-2 border-2 border-sky-400 rounded-md ' >
@@ -121,7 +118,7 @@ const ModalComments = () => {
 
                                             <button onClick={handleSendClick} disabled={!commentText} >
 
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-send" width="25" height="25" viewBox="0 0 24 24" stroke-width="1.5" stroke="#2c3e50" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" strokeWidth="1.5" stroke="#2c3e50" fill="none" strokeLinecap="round" strokeLinejoin="round">
                                                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                                     <path d="M10 14l11 -11" />
                                                     <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
