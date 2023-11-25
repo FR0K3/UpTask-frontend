@@ -266,9 +266,9 @@ const ProjectsProvider = ({ children }) => {
 
 
     const updateTask = async task => {
+        const id = task.id ? task.id : task._id;
 
         try {
-
             const token = localStorage.getItem("token");
             if (!token) return;
 
@@ -279,7 +279,7 @@ const ProjectsProvider = ({ children }) => {
                 }
             }
 
-            const { data } = await axiosClient.put(`/tasks/${task._id}`, task, config);
+            const { data } = await axiosClient.put(`/tasks/${id}`, task, config);
 
             setModalTask(false);
 
@@ -325,10 +325,11 @@ const ProjectsProvider = ({ children }) => {
         setTask(task);
         setModalDel(!modalDel);
     }
-
     const handleModalComment = task => {
+        console.log('taski', task);
         setTask(task)
         setModalComments(!modalComments);
+
     }
 
     const deleteTask = async () => {
@@ -344,7 +345,6 @@ const ProjectsProvider = ({ children }) => {
             }
 
             const { data } = await axiosClient.delete(`/tasks/${task._id}`, config);
-
 
             setModalDel(false);
             setTask({});

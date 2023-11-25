@@ -1,11 +1,8 @@
 import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import useProject from '../hooks/useProject'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import useAuth from "../hooks/useAuth"
-
-
-
 
 const ModalComments = () => {
     const { auth } = useAuth();
@@ -31,7 +28,6 @@ const ModalComments = () => {
     const emptyComments = () => {
         setComments([])
     }
-
 
 
     return (

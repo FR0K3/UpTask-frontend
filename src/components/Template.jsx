@@ -1,17 +1,22 @@
-import { formatDate } from "../helpers/date";
-import useAdmin from "../hooks/useAdmin";
 import useProject from "../hooks/useProject";
 
 const Template = ({ template }) => {
   const { handleModalETask, setLoading } = useProject();
-  const { description, name, taskName, priority, deadline } = template;
-  const admin = useAdmin();
+  const { description, name, taskName, priority, deadline, tag } = template;
+  const colors = {
+    "QA": "bg-yellow-500",
+    "Dev": "bg-pink-500",
+    "Administrator": "bg-green-500",
+    "UX/UI": "bg-sky-500",
+  }
+
   const loadTemplate = () => {
     const task = {
-      name: template.taskName,
-      description: template.description,
-      deadline: template.deadline,
-      priority: template.priority,
+      name: taskName,
+      description: description,
+      deadline: deadline,
+      priority: priority,
+      tag: tag
     };
     handleModalETask(task);
   };
@@ -26,6 +31,7 @@ const Template = ({ template }) => {
         <p className="mb-2 text-lg">{description}</p>
         <p className="mb-2 text-lg">Priority: {priority}</p>
         <p className="mb-2 text-lg text-gray-600">{deadline.substring(0,10)}</p>
+        <span className={`${colors[tag]} text-white text-sm font-semibold uppercase px-3 rounded-lg`}>{tag}</span>
       </div>
     </div>
   );

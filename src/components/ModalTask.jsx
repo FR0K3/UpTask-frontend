@@ -13,6 +13,7 @@ const ModalTask = () => {
     const [description, setDescription] = useState("");
     const [priority, setPriority] = useState("");
     const [deadline, setDeadline] = useState("");
+    const [comments, setComments] = useState([]);
     const [tag, setTag] = useState("");
     const { modalTask, handleModalTask, submitTask, task } = useProyecto();
     const params = useParams();
@@ -24,14 +25,16 @@ const ModalTask = () => {
             setDescription(task.description);
             setDeadline(task.deadline?.split("T")[0]);
             setTag(task.tag);
+            setComments(task.comments?.length !== 0 ? task.comments : []);
             setPriority(task.priority);
             return;
-        }
-        else if (task) {
+        } else if (task) {
             setName(task.name);
             setDescription(task.description);
             setDeadline(task.deadline?.split("T")[0]);
             setPriority(task.priority);
+            setComments(task.comments?.length !== 0 ? task.comments : []);
+            setTag(task.tag);
             return;
         }
         setId("");
@@ -39,6 +42,7 @@ const ModalTask = () => {
         setDescription("");
         setDeadline("");
         setPriority("");
+        setComments([]);
         setTag("");
 
     }, [task])
@@ -51,7 +55,7 @@ const ModalTask = () => {
             return;
         }
 
-        submitTask({ id, name, description, deadline, priority, project: params.id, tag, comments: [] });
+        submitTask({ id, name, description, deadline, priority, project: params.id, tag, comments: task.comments });
 
         setName("");
         setDescription("");

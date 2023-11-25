@@ -14,6 +14,7 @@ const ModalTemplate = () => {
     const [description, setDescription] = useState("");
     const [priority, setPriority] = useState("");
     const [deadline, setDeadline] = useState("");
+    const [tag, setTag] = useState("");
     const { modalTemplate, handleModalTemplate, submitProjectTemplate, submitTemplate, template } = useProyecto();
     const params = useParams();
 
@@ -24,19 +25,19 @@ const ModalTemplate = () => {
         setDescription("");
         setDeadline("");
         setPriority("");
-
+        setTag("");
     }, [template])
 
     const handleSubmit = e => {
         e.preventDefault();
 
-        if ([name, taskName, description, deadline, priority].includes("")) {
+        if ([name, taskName, description, deadline, priority, tag].includes("")) {
             toast.error("All fields are required");
             return;
         }
 
-        submitProjectTemplate({ id, name, taskName, description, deadline, priority, project: params.id });
-        submitTemplate({ id, name, taskName, description, deadline, priority, project: params.id })
+        submitProjectTemplate({ id, name, taskName, description, deadline, priority, project: params.id, tag });
+        submitTemplate({ id, name, taskName, description, deadline, priority, project: params.id, tag })
         setName("");
         setTaskName("")
         setDescription("");
@@ -162,7 +163,21 @@ const ModalTemplate = () => {
                                                 }
                                             </select>
                                         </div>
-
+                                        <div className="mb-5">
+                                            <label htmlFor="tag" className="text-gray-700 font-bold uppercase text-sm">Tag:</label>
+                                            <select
+                                                id="tag"
+                                                className="border w-full p-2 mt-2 placeholder-gray-400 rounded-md"
+                                                value={tag}
+                                                onChange={e => setTag(e.target.value)}
+                                            >
+                                                <option value="" disabled>-- Select the priority --</option>
+                                                <option value="Dev">Dev</option>
+                                                <option value="QA">QA</option>
+                                                <option value="Administrator">Administrator</option>
+                                                <option value="UX/UI">UX/UI</option>
+                                            </select>
+                                        </div>
                                         <input
                                             type="submit"
                                             className="bg-sky-600 hover:bg-sky-700 text-white font-bold uppercase w-full rounded cursor-pointer mt-3 p-3 text-sm transition-colors"
