@@ -9,6 +9,7 @@ const Form = () => {
     const [description, setDescription] = useState("");
     const [deadline, setDeadline] = useState("");
     const [client, setClient] = useState("");
+    const [state, setState] = useState(false);
     const { submitProject, project } = useProject();
     const params = useParams();
 
@@ -19,6 +20,7 @@ const Form = () => {
             setDescription(project.description);
             setDeadline(project.deadline?.split("T")[0]);
             setClient(project.client);
+            setState(project.state);
         }
     }, [params])
 
@@ -31,7 +33,7 @@ const Form = () => {
             return;
         }
 
-        await submitProject({ id, name, description, deadline, client });
+        await submitProject({ id, name, description, deadline, client, state });
         setId(null);
         setName("");
         setDescription("");

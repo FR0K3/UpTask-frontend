@@ -2,6 +2,7 @@ import { useState, useEffect, createContext } from "react";
 import { toast } from "react-toastify";
 import axiosClient from "../config/axiosClient";
 import { useNavigate } from 'react-router-dom'
+import FileSaver from "file-saver"
 import { io } from "socket.io-client";
 
 let socket;
@@ -14,15 +15,30 @@ const ProjectsProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
     const [modalTask, setModalTask] = useState(false);
     const [modalDel, setModalDel] = useState(false);
+    const [modalTemplate, setModalTemplate] = useState(false);
+    const [template, setTemplate] = useState({});
     const [task, setTask] = useState({});
     const [collaborator, setCollaborator] = useState({});
     const [modalDelC, setModalDelC] = useState(false);
     const [search, setSearch] = useState(false);
+    const [modalImport, setModalImport] = useState(false);
+    const [projectImport, setProjectImport] = useState({});
     const navigate = useNavigate();
+    const [modalComments, setModalComments] = useState(false);
+    const [comments, setComments] = useState([])
+
 
     useEffect(() => {
         socket = io(import.meta.env.VITE_API_URL);
     }, [])
+
+    const handleModalImport = () => {
+        setModalImport(!modalImport);
+    }
+
+    const handleProjectImport = (prj) => {
+        setProjectImport(prj);
+    }
 
     const getProjects = async () => {
         setLoading(true);
@@ -40,6 +56,7 @@ const ProjectsProvider = ({ children }) => {
 
             const { data } = await axiosClient('/projects', config);
             setProjects(data);
+            console.log('data', data);
 
         } catch (error) {
             toast.error(error.response.data.msg);
@@ -47,6 +64,13 @@ const ProjectsProvider = ({ children }) => {
             setLoading(false);
         }
     }
+
+    const getComments = async (task) => {
+        setComments(task.comments)
+
+    }
+
+
 
     const submitProject = async project => {
         if (project.id)
@@ -92,6 +116,8 @@ const ProjectsProvider = ({ children }) => {
                     Authorization: `Bearer ${token}`
                 }
             }
+
+            console.log(project);
 
             const { data } = await axiosClient.post('/projects', project, config);
 
@@ -158,6 +184,76 @@ const ProjectsProvider = ({ children }) => {
         }
     }
 
+    const exportProject = () => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const tasksCopy = project.tasks.map((t) => (
+            {
+                name: t.name,
+                description: t.description,
+                deadline: t.deadline,
+                priority: t.priority
+            }
+        ));
+
+        const projectToExport = {
+            name: project.name,
+            description: project.description,
+            deadline: project.deadline,
+            client: project.client,
+            tasks: tasksCopy
+        };
+
+        const blob = new Blob([JSON.stringify(projectToExport)], { type: "application/json" });
+        FileSaver.saveAs(blob, `${project.name.replace(/\s/g, "")}_UpTask.json`);
+    }
+
+    const importProject = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                }
+            }
+
+            const projectToSave = {
+                name: projectImport.name,
+                client: projectImport.client,
+                deadline: projectImport.deadline,
+                description: projectImport.description
+            }
+
+            const { data } = await axiosClient.post('/projects', projectToSave, config);
+
+            const tasksToSave = projectImport.tasks.map((t) => (
+                {
+                    name: t.name,
+                    description: t.description,
+                    deadline: t.deadline,
+                    priority: t.priority,
+                    project: data._id
+                }
+            ));
+
+            tasksToSave.forEach(async (ts) => {
+                await axiosClient.post('/tasks', ts, config)
+            });
+
+            setProjects([...projects, data]);
+
+            toast.success("Project created successfully");
+            handleModalImport();
+            setProjectImport({});
+
+        } catch (error) {
+            toast.error(error.response.data.msg);
+        }
+    }
 
     const handleModalTask = () => {
         setModalTask(!modalTask);
@@ -165,13 +261,16 @@ const ProjectsProvider = ({ children }) => {
     }
 
     const submitTask = async (task) => {
-        if (task?.id)
+
+        if (task?.project)
             await updateTask(task);
         else
             await createTask(task);
     }
 
+
     const updateTask = async task => {
+
         try {
 
             const token = localStorage.getItem("token");
@@ -184,7 +283,7 @@ const ProjectsProvider = ({ children }) => {
                 }
             }
 
-            const { data } = await axiosClient.put(`/tasks/${task.id}`, task, config);
+            const { data } = await axiosClient.put(`/tasks/${task._id}`, task, config);
 
             setModalTask(false);
 
@@ -208,8 +307,9 @@ const ProjectsProvider = ({ children }) => {
                 }
             }
 
-            const { data } = await axiosClient.post('/tasks', task, config);
+            console.log(task);
 
+            const { data } = await axiosClient.post('/tasks', task, config);
 
             setModalTask(false);
 
@@ -222,7 +322,6 @@ const ProjectsProvider = ({ children }) => {
         }
     }
 
-
     const handleModalETask = task => {
         setTask(task);
         setModalTask(true);
@@ -231,6 +330,12 @@ const ProjectsProvider = ({ children }) => {
     const handleModalDel = (task) => {
         setTask(task);
         setModalDel(!modalDel);
+    }
+    const handleModalComment = task => {
+        console.log('taski', task);
+        setTask(task)
+        setModalComments(!modalComments);
+
     }
 
     const deleteTask = async () => {
@@ -253,6 +358,66 @@ const ProjectsProvider = ({ children }) => {
 
             // Socket
             socket.emit('delete task', task);
+            toast.success(data.msg);
+
+        } catch (error) {
+            toast.error(error.response.data.msg);
+        }
+    }
+
+    const handleModalTemplate = () => {
+        setModalTemplate(!modalTemplate);
+        setTemplate({});
+    }
+
+    const submitTemplate = async (template) => {
+        await createTemplate(template);
+    }
+
+    const createTemplate = async template => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                }
+            }
+
+            const { data } = await axiosClient.post('/templates', template, config);
+
+            setModalTemplate(false);
+
+            // Socket io
+            socket.emit('new template', data);
+            toast.success("Template created successfully");
+
+        } catch (error) {
+            toast.error(error.response.data.msg);
+        }
+    }
+
+    const deleteTemplate = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                }
+            }
+
+            const { data } = await axiosClient.delete(`/templates/${task._id}`, config);
+
+            setModalDel(false);
+            setTask({});
+
+            // Socket
+            socket.emit('delete template', task);
             toast.success(data.msg);
 
         } catch (error) {
@@ -342,6 +507,27 @@ const ProjectsProvider = ({ children }) => {
         }
     }
 
+    const completeProject = async (id) => {
+        try {
+            const token = localStorage.getItem("token");
+            if (!token) return;
+
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                }
+            }
+
+            const { data } = await axiosClient.post(`/projects/status/${id}`, {}, config);
+
+            setProject(data);
+
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     const completeTask = async id => {
         try {
             const token = localStorage.getItem("token");
@@ -365,12 +551,25 @@ const ProjectsProvider = ({ children }) => {
         }
     }
 
+
     const handleSearch = () => {
         setSearch(!search);
     }
 
 
     // SOCKET IO
+    const submitProjectTemplate = (newTemplate) => {
+        const projectUpdated = { ...project };
+        projectUpdated.templates = [...projectUpdated.templates, newTemplate];
+        setProject(projectUpdated);
+    }
+
+    const deleteProjectTemplate = template => {
+        const updatedProject = { ...project };
+        updatedProject.templates = updatedProject.templates.filter(t => t._id !== template._id)
+        setProject(updatedProject);
+    }
+
     const submitProjectTask = (newTask) => {
         const projectUpdated = { ...project };
         projectUpdated.tasks = [...projectUpdated.tasks, newTask];
@@ -418,6 +617,13 @@ const ProjectsProvider = ({ children }) => {
                 task,
                 modalDel,
                 handleModalDel,
+                submitTemplate,
+                submitProjectTemplate,
+                handleModalTemplate,
+                modalTemplate,
+                setModalTemplate,
+                template,
+                setTemplate,
                 deleteTask,
                 submitCollaborator,
                 collaborator,
@@ -432,7 +638,19 @@ const ProjectsProvider = ({ children }) => {
                 deleteProjectTask,
                 updateProjectTask,
                 completeProjectTask,
-                logoutPrj
+                logoutPrj,
+                handleModalComment,
+                modalComments,
+                getComments,
+                comments,
+                exportProject,
+                handleModalImport,
+                modalImport,
+                handleProjectImport,
+                importProject,
+                projectImport,
+                completeProject
+
             }}
         >
             {children}

@@ -13,6 +13,7 @@ import NewProject from "./pages/NewProject"
 import Project from "./pages/Project"
 import EditProject from "./pages/EditProject"
 import NewCollaborator from "./pages/NewCollaborator"
+import TaskTemplates from "./pages/TaskTemplates"
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
               <Route path="new-collaborator/:id" element={<NewCollaborator />} />
               <Route path=":id" element={<Project />} />
               <Route path="edit/:id" element={<EditProject />} />
+              <Route path=":id/task-templates" element={<TaskTemplates />} />
             </Route>
           </Routes>
 

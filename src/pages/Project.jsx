@@ -5,18 +5,30 @@ import Spinner from '../components/Spinner';
 import Task from '../components/Task';
 import ModalTask from '../components/ModalTask';
 import ModalDelTask from '../components/ModalDelTask';
+import ModalComments from '../components/ModalComments';
 import Collaborator from '../components/Collaborator';
 import ModalDelC from '../components/ModalDelC';
 import useAdmin from '../hooks/useAdmin';
 import { io } from 'socket.io-client';
+import TaskDropDown from '../components/TaskDropDown';
 
 let socket;
 
 const Project = () => {
-    const { getProject, project, loading, handleModalTask, submitProjectTask, deleteProjectTask, updateProjectTask, completeProjectTask } = useProject()
+    const { getProject,
+        project,
+        loading,
+        handleModalTask,
+        submitProjectTask,
+        deleteProjectTask,
+        updateProjectTask,
+        completeProjectTask,
+        exportProject,
+        completeProject } = useProject()
     const { id } = useParams();
-    const { name } = project;
     const admin = useAdmin();
+    const { name } = project;
+
 
     useEffect(() => {
         getProject(id);
@@ -49,7 +61,6 @@ const Project = () => {
         });
     })
 
-
     if (!project?._id && !loading) return <p className="py-5 w-full text-2xl bg-red-600 text-center rounded-lg text-white font-bold">This project does not exist</p>
 
     return (
@@ -58,34 +69,47 @@ const Project = () => {
             :
             <>
 
-                <div className="flex items-center gap-4">
-                    <h1 className="text-4xl font-black">{name}</h1>
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center">
+                        <h1 className="text-4xl font-black">{name}</h1>
 
-                    {admin && (
-                        <Link
-                            to={`/projects/edit/${id}`}
-                            className="text-gray-600 hover:text-gray-900 transition-colors"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                            </svg>
+                        {admin && (
+                            <Link
+                                to={`/projects/edit/${id}`}
+                                className="text-gray-600 hover:text-gray-900 transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                </svg>
+                            </Link>
+                        )}
+                    </div>
 
-                        </Link>
-                    )}
+                    <button
+                        className={`${project.state ? "bg-sky-700 " : "bg-gray-600"} text-white font-bold  rounded-lg px-5 py-1`}
+                        onClick={() => completeProject(id)}
+                    >
+                        <p>{project.state ? "Complete" : "Incomplete"}</p>
+                    </button>
                 </div>
 
                 {admin && (
-                    <button
-                        onClick={handleModalTask}
-                        type="button"
-                        className="flex gap-2 items-center justify-center text-sm px-5 py-3 mt-5 w-full md:w-auto rounded-lg uppercase font-bold bg-sky-400 text-white text-center hover:bg-sky-600 transition-colors"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                            <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 9a.75.75 0 00-1.5 0v2.25H9a.75.75 0 000 1.5h2.25V15a.75.75 0 001.5 0v-2.25H15a.75.75 0 000-1.5h-2.25V9z" clipRule="evenodd" />
-                        </svg>
-
-                        New Task
-                    </button>
+                    <div className="flex gap-5 absolute">
+                        <TaskDropDown onCreateTask={handleModalTask}>
+                        </TaskDropDown>
+                        <button
+                            onClick={() => exportProject(project._id)}
+                            type="button"
+                            className="flex gap-2 items-center justify-center text-sm px-5 py-3 mt-5 w-full md:w-auto rounded-lg uppercase font-bold bg-sky-400 text-white text-center hover:bg-sky-600 transition-colors"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke="#fff" strokeWidth="2">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                                <path d="M11.5 21h-4.5a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v5m-5 6h7m-3 -3l3 3l-3 3" />
+                            </svg>
+                            Export
+                        </button>
+                    </div>
                 )}
 
                 <p className="font-bold text-xl mt-10">Project tasks</p>
@@ -133,7 +157,7 @@ const Project = () => {
                     </>
                 )}
 
-
+                <ModalComments />
                 <ModalTask />
                 <ModalDelTask />
                 <ModalDelC />

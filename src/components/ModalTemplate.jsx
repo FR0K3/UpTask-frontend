@@ -6,63 +6,47 @@ import { toast } from 'react-toastify';
 
 const PRIORITY = ["Low", "Medium", "High"];
 
-const ModalTask = () => {
+const ModalTemplate = () => {
 
     const [id, setId] = useState("");
     const [name, setName] = useState("");
+    const [taskName, setTaskName] = useState("");
     const [description, setDescription] = useState("");
     const [priority, setPriority] = useState("");
     const [deadline, setDeadline] = useState("");
-    const [tag, setTag] = useState("");
-    const { modalTask, handleModalTask, submitTask, task } = useProyecto();
+    const { modalTemplate, handleModalTemplate, submitProjectTemplate, submitTemplate, template } = useProyecto();
     const params = useParams();
 
     useEffect(() => {
-        if (task?._id) {
-            setId(task._id);
-            setName(task.name);
-            setDescription(task.description);
-            setDeadline(task.deadline?.split("T")[0]);
-            setTag(task.tag);
-            setPriority(task.priority);
-            return;
-        }
-        else if(task){
-            setName(task.name);
-            setDescription(task.description);
-            setDeadline(task.deadline?.split("T")[0]);
-            setPriority(task.priority);
-            return;
-        }
         setId("");
+        setTaskName("");
         setName("");
         setDescription("");
         setDeadline("");
         setPriority("");
-        setTag("");
 
-    }, [task])
+    }, [template])
 
     const handleSubmit = e => {
         e.preventDefault();
 
-        if ([name, description, deadline, priority].includes("")) {
+        if ([name, taskName, description, deadline, priority].includes("")) {
             toast.error("All fields are required");
             return;
         }
 
-        submitTask({ id, name, description, deadline, priority, project: params.id, tag });
-
+        submitProjectTemplate({ id, name, taskName, description, deadline, priority, project: params.id });
+        submitTemplate({ id, name, taskName, description, deadline, priority, project: params.id })
         setName("");
+        setTaskName("")
         setDescription("");
         setDeadline("");
         setPriority("");
-        setTag("");
     }
 
     return (
-        <Transition.Root show={modalTask} as={Fragment}>
-            <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" onClose={handleModalTask}>
+        <Transition.Root show={modalTemplate} as={Fragment}>
+            <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" onClose={handleModalTemplate}>
                 <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                     <Transition.Child
                         as={Fragment}
@@ -99,7 +83,7 @@ const ModalTask = () => {
                                 <button
                                     type="button"
                                     className="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                    onClick={handleModalTask}
+                                    onClick={handleModalTemplate}
                                 >
                                     <span className="sr-only">Cerrar</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
@@ -117,7 +101,7 @@ const ModalTask = () => {
 
                                     <form className="my-10" onSubmit={handleSubmit}>
                                         <div className="mb-5">
-                                            <label htmlFor="name" className="text-gray-700 font-bold uppercase text-sm">Name:</label>
+                                            <label htmlFor="template-name" className="text-gray-700 font-bold uppercase text-sm">Template name:</label>
                                             <input
                                                 type="text"
                                                 id="name"
@@ -125,6 +109,17 @@ const ModalTask = () => {
                                                 className="border w-full p-2 mt-2 placeholder-gray-400 rounded-md"
                                                 value={name}
                                                 onChange={e => setName(e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="mb-5">
+                                            <label htmlFor="name" className="text-gray-700 font-bold uppercase text-sm">Task name:</label>
+                                            <input
+                                                type="text"
+                                                id="name"
+                                                placeholder="Task name"
+                                                className="border w-full p-2 mt-2 placeholder-gray-400 rounded-md"
+                                                value={taskName}
+                                                onChange={e => setTaskName(e.target.value)}
                                             />
                                         </div>
 
@@ -168,22 +163,6 @@ const ModalTask = () => {
                                             </select>
                                         </div>
 
-                                        <div className="mb-5">
-                                            <label htmlFor="tag" className="text-gray-700 font-bold uppercase text-sm">Tag:</label>
-                                            <select
-                                                id="tag"
-                                                className="border w-full p-2 mt-2 placeholder-gray-400 rounded-md"
-                                                value={tag}
-                                                onChange={e => setTag(e.target.value)}
-                                            >
-                                                <option value="" disabled>-- Select the priority --</option>
-                                                <option value="Dev">Dev</option>
-                                                <option value="QA">QA</option>
-                                                <option value="Administrator">Administrator</option>
-                                                <option value="UX/UI">UX/UI</option>
-                                            </select>
-                                        </div>
-
                                         <input
                                             type="submit"
                                             className="bg-sky-600 hover:bg-sky-700 text-white font-bold uppercase w-full rounded cursor-pointer mt-3 p-3 text-sm transition-colors"
@@ -202,4 +181,4 @@ const ModalTask = () => {
     )
 }
 
-export default ModalTask;
+export default ModalTemplate;
